@@ -1,0 +1,35 @@
+---
+- hosts: webservers
+  tasks:
+    - name: Installib apache2
+      apt: name=apache2 update_cache=yes state=latest
+
+    - name: Loob public_html kataloogi userile
+      file:
+       path=/home/user/public.html
+       owner=user
+       group=user
+       mode=0755
+       state=directory
+
+    - name: Lubame userdiri
+      apache2_module: name=userdir state=present
+      
+    - name: Kopeerib index.html ansible
+      fetch: src=/var/www/html/index.html dest=./index.html flat=yes
+
+    - name: Kopeerib user_ile index.html
+      copy:
+       src: ./index.html
+       dest: /home/user/public_html/
+       owner: user
+       group: user
+       mode: '0644'
+
+    - name: user index.html muutmine
+      lineinfile: dest=/home/user/public_html/index.html regexp="Apache2 Debian Default Page" line="USER1 lehekylg" state=present
+
+    - name: Restardib apache
+      service:
+        name: apache2
+        state: restarted
